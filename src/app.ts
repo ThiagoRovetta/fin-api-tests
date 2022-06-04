@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import 'express-async-errors';
 
+import './env';
 import express from 'express';
 import cors from 'cors';
 
