@@ -3,9 +3,8 @@
   "port": 5432,
   "host": "localhost",
   "username": "postgres",
-  "password": "docker",
+  "password": "thiago11",
   "database": "fin_api",
-  "name": "default",
   "migrations": [
     "./src/database/migrations/*.ts"
   ],

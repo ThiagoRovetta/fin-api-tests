@@ -5,11 +5,12 @@ import './env';
 import express from 'express';
 import cors from 'cors';
 
-import './database';
 import './shared/container';
 import { router } from './routes';
 import { AppError } from './shared/errors/AppError';
+import createConnection from './database';
 
+createConnection();
 const app = express();
 
 app.use(cors());
