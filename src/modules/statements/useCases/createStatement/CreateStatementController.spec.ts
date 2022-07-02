@@ -143,4 +143,138 @@ describe('Create Statement Controller', () => {
 
     expect(response.status).toBe(400);
   });
+
+  it('Should be able to create a new transfer statement', async () => {
+    await request(app)
+      .post('/api/v1/users')
+      .send({
+        name: 'New user 12',
+        email: 'new_user_12@finapi.com',
+        password: 'newuser'
+      });
+
+    const authResponse = await request(app)
+      .post('/api/v1/sessions')
+      .send({
+        email: 'new_user_12@finapi.com',
+        password: 'newuser'
+      });
+
+    const { token } = authResponse.body;
+
+    const response = await request(app)
+      .get('/api/v1/profile')
+      .send()
+      .set({
+        authorization: `Bearer ${token}`,
+      });
+
+    const receiver_id = response.body.id;
+
+    await request(app)
+      .post('/api/v1/users')
+      .send({
+        name: 'New user 13',
+        email: 'new_user_13@finapi.com',
+        password: 'newuser'
+      });
+
+    const authResponse2 = await request(app)
+      .post('/api/v1/sessions')
+      .send({
+        email: 'new_user_13@finapi.com',
+        password: 'newuser'
+      });
+
+    const { token: token2 } = authResponse2.body;
+
+    await request(app)
+      .post('/api/v1/statements/deposit')
+      .send({
+        amount: 200.00,
+        description: 'Deposit of 200.00'
+      })
+      .set({
+        authorization: `Bearer ${token2}`,
+      });
+
+    const response2 = await request(app)
+      .post(`/api/v1/statements/transfer/${receiver_id}`)
+      .send({
+        amount: 20.00,
+        description: 'Transfer of 20.00'
+      })
+      .set({
+        authorization: `Bearer ${token2}`,
+      });
+
+    expect(response2.status).toBe(201);
+  });
+
+  it('Should not be able to create a transfer statement with insufficients funds', async () => {
+    await request(app)
+      .post('/api/v1/users')
+      .send({
+        name: 'New user 14',
+        email: 'new_user_14@finapi.com',
+        password: 'newuser'
+      });
+
+    const authResponse = await request(app)
+      .post('/api/v1/sessions')
+      .send({
+        email: 'new_user_14@finapi.com',
+        password: 'newuser'
+      });
+
+    const { token } = authResponse.body;
+
+    const response = await request(app)
+      .get('/api/v1/profile')
+      .send()
+      .set({
+        authorization: `Bearer ${token}`,
+      });
+
+    const receiver_id = response.body.id;
+
+    await request(app)
+      .post('/api/v1/users')
+      .send({
+        name: 'New user 15',
+        email: 'new_user_15@finapi.com',
+        password: 'newuser'
+      });
+
+    const authResponse2 = await request(app)
+      .post('/api/v1/sessions')
+      .send({
+        email: 'new_user_15@finapi.com',
+        password: 'newuser'
+      });
+
+    const { token: token2 } = authResponse2.body;
+
+    await request(app)
+      .post('/api/v1/statements/deposit')
+      .send({
+        amount: 200.00,
+        description: 'Deposit of 200.00'
+      })
+      .set({
+        authorization: `Bearer ${token2}`,
+      });
+
+    const response2 = await request(app)
+      .post(`/api/v1/statements/transfer/${receiver_id}`)
+      .send({
+        amount: 300.00,
+        description: 'Transfer of 300.00'
+      })
+      .set({
+        authorization: `Bearer ${token2}`,
+      });
+
+    expect(response2.status).toBe(400);
+  });
 });

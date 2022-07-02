@@ -13,6 +13,7 @@ let createStatementUseCase: CreateStatementUseCase;
 enum OperationType {
   DEPOSIT = 'deposit',
   WITHDRAW = 'withdraw',
+  TRANSFER = 'transfer',
 }
 
 describe('Create statement use case', () => {
@@ -84,6 +85,45 @@ describe('Create statement use case', () => {
 
     expect(async () => {
       await createStatementUseCase.execute(withdrawStatement);
+    }).rejects.toBeInstanceOf(CreateStatementError.InsufficientFunds);
+  });
+
+  it('Should not be able to create a new transfer statement with insufficient funds', async () => {
+    const new_user: ICreateUserDTO = {
+      email: 'user@test.com',
+      password: '1234',
+      name: 'User Test',
+    };
+
+    const user = await inMemoryUsersRepository.create(new_user);
+
+    const new_user2: ICreateUserDTO = {
+      email: 'user@test.com',
+      password: '1234',
+      name: 'User Test',
+    };
+
+    const user2 = await inMemoryUsersRepository.create(new_user2);
+
+    const depositStatement: ICreateStatementDTO = {
+      user_id: user.id,
+      type: "deposit" as OperationType,
+      amount: 200.00,
+      description: 'Deposit'
+    };
+
+    await createStatementUseCase.execute(depositStatement);
+
+    const transferStatement: ICreateStatementDTO = {
+      user_id: user.id,
+      type: "transfer" as OperationType,
+      amount: 300.00,
+      description: 'Transfer',
+      receiver_id: user2.id
+    };
+
+    expect(async () => {
+      await createStatementUseCase.execute(transferStatement);
     }).rejects.toBeInstanceOf(CreateStatementError.InsufficientFunds);
   });
 })
